@@ -25,7 +25,7 @@ Fetch list of tournaments:
 ```python
 from pyfivbvis.vis_fetcher import FivbVis as vis
 all_tournaments = vis.fetch_beach_tournament_list()
-print(all_tournaments[0:3])
+print(all_tournaments[0:2])
 
 [
     {
@@ -61,23 +61,118 @@ print(all_tournaments[0:3])
         "NbTeamsQualification": "16",
         "NbTeamsMainDraw": "16",
         "NbTeamsFromQualification": "4",
-    },
-    {
-        "No": "3",
-        "Title": "AVC Continental Beach Volleyball Cup Sub Zonal Tournament of Central Asia - Pool A",
-        "Type": "11",
-        "NoEvent": "",
-        "Code": "CCSZCAAM",
-        "Gender": "0",
-        "Name": "Sub Zonal Tournament of Central Asia Pool A",
-        "CountryCode": "IN",
-        "StartDateQualification": "",
-        "StartDateMainDraw": "2010-09-25",
-        "EndDateQualification": "",
-        "EndDateMainDraw": "2010-09-26",
-        "NbTeamsQualification": "64",
-        "NbTeamsMainDraw": "32",
-        "NbTeamsFromQualification": "8",
-    },
+    }
 ]
 ```
+
+Fetch list of matches from a tournament:
+
+```python
+from pyfivbvis.vis_fetcher import FivbVis as vis
+tourn_matches = vis.fetch_beach_match_list('503')
+# To include refs and round metadata
+tourn_matches = vis.fetch_beach_match_list('503', ref_info=True, round_info=True)
+print(tourn_matches[0:2])
+
+[
+    {
+        "NoTournament": "503",
+        "NoPlayerA1": "103903",
+        "NoPlayerA2": "103904",
+        "NoPlayerB1": "117998",
+        "NoPlayerB2": "120825",
+        "NoTeamA": "771830",
+        "NoTeamB": "771808",
+        "TeamAName": "Larissa/Juliana",
+        "TeamBName": "Ryabova/Ushkova",
+        "TeamAFederationCode": "BRA",
+        "TeamBFederationCode": "RUS",
+        "NoInTournament": "1",
+        "LocalDate": "2011-04-19",
+        "LocalTime": "10:00:00",
+        "Court": "1",
+        "MatchPointsA": "2",
+        "MatchPointsB": "0",
+        "PointsTeamASet1": "21",
+        "PointsTeamBSet1": "14",
+        "PointsTeamASet2": "21",
+        "PointsTeamBSet2": "15",
+        "PointsTeamASet3": "",
+        "PointsTeamBSet3": "",
+        "DurationSet1": "840",
+        "DurationSet2": "1020",
+        "DurationSet3": "",
+        "WinnerRank": "0",
+        "LoserRank": "0",
+    },
+    {
+        "NoTournament": "503",
+        "NoPlayerA1": "103671",
+        "NoPlayerA2": "103670",
+        "NoPlayerB1": "122400",
+        "NoPlayerB2": "118204",
+        "NoTeamA": "771853",
+        "NoTeamB": "771844",
+        "TeamAName": "Nyström Em./Nyström Er.",
+        "TeamBName": "Cicolari/Menegatti",
+        "TeamAFederationCode": "FIN",
+        "TeamBFederationCode": "ITA",
+        "NoInTournament": "2",
+        "LocalDate": "2011-04-19",
+        "LocalTime": "10:00:00",
+        "Court": "3",
+        "MatchPointsA": "1",
+        "MatchPointsB": "2",
+        "PointsTeamASet1": "18",
+        "PointsTeamBSet1": "21",
+        "PointsTeamASet2": "21",
+        "PointsTeamBSet2": "15",
+        "PointsTeamASet3": "11",
+        "PointsTeamBSet3": "15",
+        "DurationSet1": "1200",
+        "DurationSet2": "1020",
+        "DurationSet3": "780",
+        "WinnerRank": "0",
+        "LoserRank": "0",
+    },
+]
+
+```
+
+Fetch list of rankings from a tournament:
+
+```python
+from pyfivbvis.vis_fetcher import FivbVis as vis
+tourn_ranks = vis.fetch_beach_tournament_ranking('503')
+print(tourn_ranks[0:2])
+
+[
+    {
+        "EarnedPointsPlayer": "300",
+        "EarningsPlayer": "850000",
+        "EarnedPointsTeam": "600",
+        "EarningsTotalTeam": "3000000",
+        "Position": "1",
+        "Rank": "1",
+        "TeamFederationCode": "BRA",
+        "TeamName": "Larissa/Juliana",
+        "NoTeam": "375507",
+        "NoTournament": "502",
+    },
+    {
+        "EarnedPointsPlayer": "270",
+        "EarningsPlayer": "600000",
+        "EarnedPointsTeam": "540",
+        "EarningsTotalTeam": "2100000",
+        "Position": "2",
+        "Rank": "2",
+        "TeamFederationCode": "GER",
+        "TeamName": "Goller/Ludwig",
+        "NoTeam": "375500",
+        "NoTournament": "502",
+    },
+]
+
+
+```
+

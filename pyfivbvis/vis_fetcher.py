@@ -159,3 +159,72 @@ class FivbVis:
 
         return match_list
 
+    def fetch_beach_tournament_ranking(tournament_id):
+        """
+        Fetch FIVB beach ranking list for a specific tournament.
+
+        Parameters
+        ----------
+        tournament_id : str
+            The ID of the tournament to fetch matches for.
+
+        Returns
+        -------
+        list of dicts
+            A list of matches with fields such as EarnedPointsTeam, EarningsTotalTeam, Position, etc.
+            
+        Notes
+        ------
+        Documentation: 
+            https://www.fivb.org/VisSDK/VisWebService/#GetBeachTournamentRanking.html
+
+        """
+        
+        base_fields = [
+            "EarnedPointsPlayer", "EarningsPlayer",
+            "EarnedPointsTeam", "EarningsTotalTeam", 
+            "Position", "Rank", "TeamFederationCode",
+            "TeamName", "NoTeam"
+        ]
+
+        # Create the XML request string for each phase
+        fields_string = ' '.join(base_fields)
+        xml_request = f"""
+        <Requests>
+            <Request Type="GetBeachTournamentRanking" No="{tournament_id}" Fields='{fields_string}' />
+        </Requests>
+        """
+
+        # Set the URL for the request
+        url = "https://www.fivb.org/vis2009/XmlRequest.asmx"
+
+        # Send the request
+        try:
+            # Send the request
+            res = requests.post(url, data=xml_request, headers={'Content-Type': 'text/xml'})
+            res.raise_for_status()
+            
+            # Parse the XML response
+            soup = BeautifulSoup(res.content, 'xml')
+            tournaments = soup.find('BeachTournamentRanking')
+            
+            if tournaments is None:
+                print("No BeachTournamentRanking element found in response")
+                tournament_data = []
+            else:
+                # Filter for only Tag elements and create dictionary
+                tournament_data = [
+                    {**{field: tournament.get(field) for field in base_fields}, "NoTournament": tournament_id}
+                    for tournament in tournaments.find_all()
+                    if tournament.name is not None  # This filters out NavigableString objects
+                ]
+            
+            return tournament_data
+
+        except requests.RequestException as e:
+            print(f"Request failed: {e}")
+            tournament_data = []
+        except Exception as e:
+            print(f"Error processing data: {e}")
+            tournament_data = []
+
