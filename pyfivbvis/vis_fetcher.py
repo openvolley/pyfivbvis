@@ -228,3 +228,72 @@ class FivbVis:
             print(f"Error processing data: {e}")
             tournament_data = []
 
+    def fetch_beach_team(team_no):
+        """
+        Fetch FIVB beach team meta-data a specific tournament.
+
+        Parameters
+        ----------
+        team_no : str
+            The TeamNo of the team to fetch meta-data for. - This number changes across beach tournaments.
+
+        Returns
+        -------
+        list of dicts
+            A list of matches with fields such as EarnedPointsTeam, EarningsTotalTeam, Rank, etc.
+            
+        Notes
+        ------
+        Documentation: 
+            https://www.fivb.org/VisSDK/VisWebService/GetBeachTeam.html
+
+        """
+        
+        base_fields = [
+            "NoPlayer1", "NoPlayer2", "Name", "Position", "Rank", "TeamFederationCode",
+            "EarningsPlayer", "EarnedPointsTeam", "EarnedPointsPlayer",
+            "EarningsTeam", "EntryPoints1", "EntryPoints2", "IsInQualification",
+            "IsInMainDraw", "MainDrawSeed1", "MainDrawSeed2", "No",
+            "NoShirt1", "NoShirt2", "NoTournament", "PositionInMainDraw", 
+            "PositionInQualification", "PositionInEntry", "QualificationPoints1", 
+            "QualificationPoints2", "TechnicalPoints1", "TechnicalPoints2"
+            ]
+
+        # Create the XML request string for each phase
+        fields_string = ' '.join(base_fields)
+        xml_request = f"""
+        <Requests>
+            <Request Type="GetBeachTeam" No="{team_no}" Fields='{fields_string}' />
+        </Requests>
+        """
+
+        # Set the URL for the request
+        url = "https://www.fivb.org/vis2009/XmlRequest.asmx"
+
+        # Send the request
+        try:
+            # Send the request
+            res = requests.post(url, data=xml_request, headers={'Content-Type': 'text/xml'})
+            res.raise_for_status()
+            
+            # Parse the XML response
+            soup = BeautifulSoup(res.content, 'xml')
+            teams = soup.find('BeachTeam')
+            
+            if teams is None:
+                print("No BeachTeam element found in response")
+                team_data = []
+            else:
+                # Filter for only Tag elements and create dictionary
+                team_data = [
+                    {field: teams.get(field) for field in base_fields}
+                ]
+            
+            return team_data
+
+        except requests.RequestException as e:
+            print(f"Request failed: {e}")
+            team_data = []
+        except Exception as e:
+            print(f"Error processing data: {e}")
+            team_data = []

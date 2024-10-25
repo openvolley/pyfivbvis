@@ -12,11 +12,14 @@ pyfivbvis provides an python client to the FIVB VIS web service system.
 
 ## Installation
 
-You can install pyfivbvis with:
+You can install or update pyfivbvis with:
 
 ```
 pip install pyfivbvis
+pip install pyfivbvis -U
 ```
+
+
 
 ## Examples
 
