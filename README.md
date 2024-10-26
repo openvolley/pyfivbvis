@@ -10,6 +10,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 pyfivbvis provides an python client to the FIVB VIS web service system.
 
+Full details - https://openvolley.github.io/pyfivbvis/
 ## Installation
 
 You can install or update pyfivbvis with:
