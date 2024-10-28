@@ -62,13 +62,13 @@ class FivbVis:
 
         return tourn_list
 
-    def fetch_beach_match_list(tournament_id, ref_info=False, round_info=False):
+    def fetch_beach_match_list(tournament_no, ref_info=False, round_info=False):
         """
         Fetch FIVB beach match list for a specific tournament.
 
         Parameters
         ----------
-        tournament_id : str
+        tournament_no : str
             The ID of the tournament to fetch matches for.
         ref_info : bool, optional
             Include the referees of matches? Defaults to False.
@@ -131,7 +131,7 @@ class FivbVis:
             <Requests>
                 <Request Type='GetBeachMatchList' 
                         Fields='{fields_string}'>
-                    <Filter NoTournament='{tournament_id}' InMainDraw='true' />
+                    <Filter NoTournament='{tournament_no}' InMainDraw='true' />
                 </Request>
             </Requests>
         """
@@ -159,13 +159,13 @@ class FivbVis:
 
         return match_list
 
-    def fetch_beach_tournament_ranking(tournament_id):
+    def fetch_beach_tournament_ranking(tournament_no):
         """
         Fetch FIVB beach ranking list for a specific tournament.
 
         Parameters
         ----------
-        tournament_id : str
+        tournament_no : str
             The ID of the tournament to fetch matches for.
 
         Returns
@@ -191,7 +191,7 @@ class FivbVis:
         fields_string = ' '.join(base_fields)
         xml_request = f"""
         <Requests>
-            <Request Type="GetBeachTournamentRanking" No="{tournament_id}" Fields='{fields_string}' />
+            <Request Type="GetBeachTournamentRanking" No="{tournament_no}" Fields='{fields_string}' />
         </Requests>
         """
 
@@ -214,7 +214,7 @@ class FivbVis:
             else:
                 # Filter for only Tag elements and create dictionary
                 tournament_data = [
-                    {**{field: tournament.get(field) for field in base_fields}, "NoTournament": tournament_id}
+                    {**{field: tournament.get(field) for field in base_fields}, "NoTournament": tournament_no}
                     for tournament in tournaments.find_all()
                     if tournament.name is not None  # This filters out NavigableString objects
                 ]
@@ -297,3 +297,72 @@ class FivbVis:
         except Exception as e:
             print(f"Error processing data: {e}")
             team_data = []
+
+    def fetch_beach_stats_list(tournament_no):
+        """
+        Fetch FIVB beach stats list from a specific tournament.
+
+        Parameters
+        ----------
+        tournament_no : str
+            The ID of the tournament to fetch matches for.
+
+        Returns
+        -------
+        list of dicts
+            A list of stats - BlockPoint, SpikeTotal, SpikePoint, SpikeFault, etc.
+            
+        Notes
+        ------
+        Documentation: 
+            https://www.fivb.org/VisSDK/VisWebService/GetBeachTeam.html
+
+        """
+        base_fields = [
+            "No", "NoShirt",  "NoItem", "BlockContinue", "BlockFault", "BlockPoint", "BlockTotal", 
+            "DigContinue", "DigExcellent", "DigFault", "DigTotal", "ReceptionContinue", "ReceptionExcellent", 
+            "ReceptionFault", "ReceptionTotal", "ServeContinue", "ServeFault", "ServePoint", "ServeTotal", 
+            "SetContinue", "SetExcellent", "SetFault", "SetTotal", "SpikeContinue", "SpikeFault", 
+            "SpikePoint", "SpikeTotal", "AttemptTotal", "PointTotal", "TeamFault", "OpponentError",
+        ]
+
+        # Join fields as a space-separated string
+        fields_string = ' '.join(base_fields)
+
+        # Construct the XML request
+        xml_request = f"""
+        <Request Type="GetBeachStatisticList" SumBy="Tournament" Fields="{fields_string}">
+            <Filter NoTournaments="{tournament_no}" />
+            <Relation Name="Player" Fields="No TeamName NoTeam FederationCode"/>
+        </Request>
+        """
+
+        # Set the URL for the request
+        url = "https://www.fivb.org/vis2009/XmlRequest.asmx"
+
+        # Make the request
+        res = requests.post(url, data=xml_request, headers={'Content-Type': 'text/xml'})
+
+        # Parse the XML response
+        soup = BeautifulSoup(res.content, 'xml')
+        stats_data = []
+
+        # Iterate through each VolleyStatistic element
+        for stat in soup.find_all('VolleyStatistic'):
+            # Get the base fields
+            stat_data = {field: stat.get(field) for field in base_fields}
+            stat_data["NoTournament"] = tournament_no
+
+            # Extract player information if present
+            player = stat.find('Player')
+            if player:
+                # Add player details to the stats data
+                stat_data.update({
+                    "PlayerNo": player.get("No"),
+                    "PlayerTeamName": player.get("TeamName"),
+                    "PlayerFederationCode": player.get("FederationCode")
+                })
+
+            # Append the enriched data to the stats_data list
+            stats_data.append(stat_data)
+        return stats_data
